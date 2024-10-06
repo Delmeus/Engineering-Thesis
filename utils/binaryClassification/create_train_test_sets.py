@@ -1,6 +1,7 @@
 import os
 import random
 import shutil
+import sys
 
 
 def move_files(source_dir, destination_dir, percentage=0.8):
@@ -25,7 +26,16 @@ def move_files(source_dir, destination_dir, percentage=0.8):
 
     print(f"Moved {files_moved} files from '{source_dir}' to '{destination_dir}'.")
 
-source_directory = "/home/antek/studia/inzynierka/Engineering-Thesis/img/archive/test"
-destination_directory = "/home/antek/studia/inzynierka/Engineering-Thesis/img/archive/train"
+def main():
+    if len(sys.argv) != 3:
+        print("Usage: python script.py <source_directory> <destination_directory>")
+        return
 
-move_files(source_directory, destination_directory, percentage=0.8)
+    source_directory = sys.argv[1]
+    destination_directory = sys.argv[2]
+
+    if not os.path.exists(source_directory) or not os.path.exists(destination_directory):
+        print("Given path does not exist or is not a directory")
+        return
+
+    move_files(source_directory, destination_directory, percentage=0.8)

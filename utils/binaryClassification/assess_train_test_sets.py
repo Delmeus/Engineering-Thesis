@@ -20,7 +20,7 @@ def check_sickness_status(directory, csv_file, output_file):
 
     print(f"Output written to {output_file}")
 
-csv_file = '/img/archive/binaryProblem.csv'
+csv_file = 'img/archive/binaryProblem.csv'
 
 def main():
     if len(sys.argv) != 3:
@@ -31,7 +31,7 @@ def main():
     output_file = dir + '/' + sys.argv[2]
 
     if not os.path.exists(dir):
-        print("Podana sciezka nie istnieje lub nie jest katalogiem")
+        print("Given path does not exist or is not a directory")
         return
 
     check_sickness_status(dir, csv_file, output_file)

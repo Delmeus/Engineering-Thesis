@@ -17,7 +17,7 @@ def main():
     src = sys.argv[1]
 
     if not os.path.exists(src):
-        print("Podana sciezka nie istnieje lub nie jest katalogiem")
+        print("Given path does not exist or is not a directory")
         return
 
     filenames = get_filenames_without_extension(src)
