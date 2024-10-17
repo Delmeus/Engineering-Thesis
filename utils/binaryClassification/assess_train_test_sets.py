@@ -28,7 +28,7 @@ def main():
         return
 
     dir = sys.argv[1]
-    output_file = dir + '/' + sys.argv[2]
+    output_file = "img/archive/" + sys.argv[2]
 
     if not os.path.exists(dir):
         print("Given path does not exist or is not a directory")
