@@ -14,7 +14,6 @@ def move_files(source_dir, destination_dir, percentage=0.8):
     files = [f for f in os.listdir(source_dir) if os.path.isfile(os.path.join(source_dir, f))]
 
     random.shuffle(files)
-
     num_files_to_move = int(len(files) * percentage)
 
     files_moved = 0
@@ -39,3 +38,5 @@ def main():
         return
 
     move_files(source_directory, destination_directory, percentage=0.8)
+
+main()

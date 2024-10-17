@@ -1,2 +1,4 @@
 *.jpg
 /notes.txt
+__pycache__/
+*.py[cod]

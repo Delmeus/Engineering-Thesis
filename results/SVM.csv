@@ -1,0 +1,5 @@
+accuracy,0.774
+recall,0.302
+precision,0.397
+f1,0.343
+balanced accuracy,0.595
