@@ -14,18 +14,18 @@ class ResultHelper:
                        "precision": 0.0,
                        "f1": 0.0,
                        "balanced accuracy": 0.0}
-        self.accuracy_scores = []
-        self.recall_scores = []
-        self.precision_scores = []
-        self.f1_scores = []
-        self.balanced_accuracy_scores = []
+        # self.accuracy_scores = []
+        # self.recall_scores = []
+        # self.precision_scores = []
+        # self.f1_scores = []
+        # self.balanced_accuracy_scores = []
 
     def append_all_scores(self, y_test, y_pred):
-        self.accuracy_scores.append(round(accuracy_score(y_test, y_pred), 3))
-        self.recall_scores.append(round(recall_score(y_test, y_pred), 3))
-        self.precision_scores.append(round(precision_score(y_test, y_pred), 3))
-        self.f1_scores.append(round(f1_score(y_test, y_pred), 3))
-        self.balanced_accuracy_scores.append(round(balanced_accuracy_score(y_test, y_pred), 3))
+        # self.accuracy_scores.append(round(accuracy_score(y_test, y_pred), 3))
+        # self.recall_scores.append(round(recall_score(y_test, y_pred), 3))
+        # self.precision_scores.append(round(precision_score(y_test, y_pred), 3))
+        # self.f1_scores.append(round(f1_score(y_test, y_pred), 3))
+        # self.balanced_accuracy_scores.append(round(balanced_accuracy_score(y_test, y_pred), 3))
 
         self.scores[self.metrics[0]] = round(accuracy_score(y_test, y_pred), 3)
         self.scores[self.metrics[1]] = round(recall_score(y_test, y_pred), 3)

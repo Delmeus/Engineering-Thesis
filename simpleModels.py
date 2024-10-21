@@ -11,6 +11,8 @@ import os
 from binaryModel.utils import ResultHelper as RH
 import joblib
 
+from sklearn.model_selection import RepeatedStratifiedKFold
+
 
 # 1. Load image paths and labels from CSV file
 def load_images_from_csv(csv_file, img_folder):
@@ -36,7 +38,8 @@ def load_images_from_csv(csv_file, img_folder):
 
 
 csv_file = 'binaryModel/archive/labels.csv'
-img_folder = 'binaryModel/archive/all_images'
+# img_folder = 'binaryModel/archive/all_images'
+img_folder = 'img/archive/all_images'
 images, labels = load_images_from_csv(csv_file, img_folder)
 
 
@@ -55,8 +58,7 @@ X = extract_hog_features(images)
 
 y = np.array(labels)
 
-from sklearn.model_selection import StratifiedKFold
-skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=1234)
+rskf = RepeatedStratifiedKFold(n_splits=5, n_repeats=5, random_state=36851234)
 
 svm_results = RH.ResultHelper("SVM")
 kNN_results = RH.ResultHelper("kNN")
@@ -66,7 +68,8 @@ logistic_results = RH.ResultHelper("Logistic regression")
 
 iteration = 1
 
-for train_index, test_index in skf.split(X, y):
+
+for train_index, test_index in rskf.split(X, y):
     print(f"iteration = {iteration}")
     iteration = iteration + 1
 
