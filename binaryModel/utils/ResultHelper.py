@@ -1,71 +1,64 @@
 from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score, balanced_accuracy_score
+from imblearn.metrics import geometric_mean_score
 import numpy as np
 import matplotlib.pyplot as plt
 from math import pi
 import os
 
 
+def confirm_path(path, name, extension):
+    if extension[0] == '.':
+        extension = extension[1:]
+    if path[-1] == '/':
+        fixed_path = f"{path}{name}.{extension}"
+    else:
+        fixed_path = f"{path}/{name}.{extension}"
+    return fixed_path
+
 class ResultHelper:
     def __init__(self, name="model"):
         self.name = name
-        self.metrics = ["accuracy", "recall", "precision", "f1", "balanced accuracy"]
+        self.metrics = ["accuracy", "recall", "precision", "f1", "balanced accuracy", "G-mean"]
         self.scores = {"accuracy": 0.0,
                        "recall": 0.0,
                        "precision": 0.0,
                        "f1": 0.0,
-                       "balanced accuracy": 0.0}
-        # self.accuracy_scores = []
-        # self.recall_scores = []
-        # self.precision_scores = []
-        # self.f1_scores = []
-        # self.balanced_accuracy_scores = []
+                       "balanced accuracy": 0.0,
+                       "G-mean": 0.0}
 
     def append_all_scores(self, y_test, y_pred):
-        # self.accuracy_scores.append(round(accuracy_score(y_test, y_pred), 3))
-        # self.recall_scores.append(round(recall_score(y_test, y_pred), 3))
-        # self.precision_scores.append(round(precision_score(y_test, y_pred), 3))
-        # self.f1_scores.append(round(f1_score(y_test, y_pred), 3))
-        # self.balanced_accuracy_scores.append(round(balanced_accuracy_score(y_test, y_pred), 3))
-
-        self.scores[self.metrics[0]] = round(accuracy_score(y_test, y_pred), 3)
-        self.scores[self.metrics[1]] = round(recall_score(y_test, y_pred), 3)
-        self.scores[self.metrics[2]] = round(precision_score(y_test, y_pred), 3)
-        self.scores[self.metrics[3]] = round(f1_score(y_test, y_pred), 3)
-        self.scores[self.metrics[4]] = round(balanced_accuracy_score(y_test, y_pred), 3)
+        self.scores[self.metrics[0]] = accuracy_score(y_test, y_pred)
+        self.scores[self.metrics[1]] = recall_score(y_test, y_pred)
+        self.scores[self.metrics[2]] = precision_score(y_test, y_pred)
+        self.scores[self.metrics[3]] = f1_score(y_test, y_pred)
+        self.scores[self.metrics[4]] = balanced_accuracy_score(y_test, y_pred)
+        self.scores[self.metrics[5]] = geometric_mean_score(y_test, y_pred)
 
     def print_all_scores(self):
         for metric in self.metrics:
             print(f"{metric} = {self.scores[metric]}")
-        # print(f"accuracy scores = {self.accuracy_scores}")
-        # print(f"recall scores = {self.recall_scores}")
-        # print(f"precision scores = {self.precision_scores}")
-        # print(f"f1 scores = {self.f1_scores}")
-        # print(f"balanced accuracy scores = {self.f1_scores}")
 
     def print_mean_scores(self):
         for metric in self.metrics:
             print(f"{metric} = {round(np.mean(self.scores[metric]), 3)}")
-        # print(f"Mean values from {len(self.accuracy_scores)} experiments")
-        # print(f"accuracy scores = {round(np.mean(self.accuracy_scores), 2)}")
-        # print(f"recall scores = {round(np.mean(self.recall_scores), 2)}")
-        # print(f"precision scores = {round(np.mean(self.precision_scores), 2)}")
-        # print(f"f1 scores = {round(np.mean(self.f1_scores), 2)}")
-        # print(f"balanced accuracy scores = {round(np.mean(self.f1_scores), 2)}")
 
     def save_scores(self):
-        path = f"./results/{self.name}.csv"
+        path = f"G:/Projekty_Studia/inzynierka/results/test/{self.name}.csv"
         path = os.path.normpath(path)
         file = open(path, "w")
         for metric in self.metrics:
-            file.write(f"{metric},{round(np.mean(self.scores[metric]), 3)}\n")
+            file.write(f"{metric}")
+            for score in self.scores[metric]:
+                file.write(f",{score}")
+            file.write("\n")
         file.close()
 
-    def plot_radar_chart(self):
+    def plot_radar_chart_for_ml_models(self):
         means = []
         for metric in self.metrics:
             means.append(self.scores[metric])
 
-        N = 5
+        N = len(self.scores)
         angles = [n / float(N) * 2 * pi for n in range(N)]
         angles += angles[:1]
 
@@ -86,7 +79,8 @@ class ResultHelper:
         ax.plot(angles, means, linewidth=1, linestyle='solid')
 
         plt.title(f"{self.name} Performance Chart", size=20, color='black', y=1.06)
-        path = f"./results/radar_{self.name}.png"
+        # path = f"./results/radar_{self.name}.png"
+        path = f"G:/Projekty_Studia/inzynierka/results/test/radar_{self.name}.png"
         path = os.path.normpath(path)
         plt.savefig(path, dpi=200)
         plt.show()
@@ -120,8 +114,23 @@ class ResultHelper:
             ax.plot(angles, values, linewidth=1, linestyle='solid', label=name)
 
         plt.title("Combined Performance Chart", size=20, color='black', y=1.06)
-        path = "./results/radar_combined.png"
+        path = "G:/Projekty_Studia/inzynierka/results/test/radar_combined.png"
         path = os.path.normpath(path)
         plt.legend(bbox_to_anchor=(1.15, -0.05), ncol=5)
         plt.savefig(path, dpi=200)
         plt.show()
+
+    def plot_data_stream(self, data_stream, name="data_stream", folder_path="./results"):
+        plt.figure(figsize=(10, 6))
+        plt.plot(data_stream, marker='o', color='r')
+        plt.title('Percentage of sick occurrences per batch')
+        plt.xlabel('Batch Number')
+        plt.ylabel('Percentage of sick photos(%)')
+        plt.grid(True)
+
+        # path = confirm_path(folder_path, name, 'png')
+        #
+        # path = os.path.normpath(path)
+        # plt.savefig(path, dpi=200)
+        plt.show()
+

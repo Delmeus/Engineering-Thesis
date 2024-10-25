@@ -13,50 +13,10 @@ import joblib
 
 from sklearn.model_selection import RepeatedStratifiedKFold
 
+data = np.load('../npy_datasets/image_dataset.npy')
 
-# 1. Load image paths and labels from CSV file
-def load_images_from_csv(csv_file, img_folder):
-    data = pd.read_csv(csv_file)
-    images = []
-    labels = []
-
-    for index, row in data.iterrows():
-        img_path = os.path.join(img_folder, row['image']) + '.jpg'
-        img_path = os.path.normpath(img_path)
-        label = row['sick']
-
-        # Read the image
-        img = cv2.imread(img_path, cv2.IMREAD_COLOR)
-        if img is not None:
-            img = cv2.resize(img, (64, 128))
-            images.append(img)
-            labels.append(label)
-        else:
-            print("Can't read image!")
-
-    return images, labels
-
-
-csv_file = 'binaryModel/archive/labels.csv'
-# img_folder = 'binaryModel/archive/all_images'
-img_folder = 'img/archive/all_images'
-images, labels = load_images_from_csv(csv_file, img_folder)
-
-
-hog = cv2.HOGDescriptor()
-
-
-def extract_hog_features(images):
-    features = []
-    for img in images:
-        hog_features = hog.compute(img).flatten()
-        features.append(hog_features)
-    return np.array(features)
-
-
-X = extract_hog_features(images)
-
-y = np.array(labels)
+X = data[:, :-1]
+y = data[:, -1]
 
 rskf = RepeatedStratifiedKFold(n_splits=5, n_repeats=5, random_state=36851234)
 
@@ -99,7 +59,7 @@ for train_index, test_index in rskf.split(X, y):
     logistic_classifier.fit(X_train, y_train)
     y_pred = logistic_classifier.predict(X_test)
     logistic_results.append_all_scores(y_test, y_pred)
-
+    #
     # print("Training AdaBoost")
     # adaBoost_classifier = AdaBoostClassifier(n_estimators=50)
     # adaBoost_classifier.fit(X_train, y_train)
@@ -109,41 +69,44 @@ for train_index, test_index in rskf.split(X, y):
 # print("\nSVM results:")
 # svm_results.print_all_scores()
 # svm_results.print_mean_scores()
-svm_results.plot_radar_chart()
+svm_results.plot_radar_chart_for_ml_models()
 svm_results.save_scores()
 
 # print("\nkNN results:")
 # kNN_results.print_all_scores()
 # kNN_results.print_mean_scores()
-kNN_results.plot_radar_chart()
+kNN_results.plot_radar_chart_for_ml_models()
 kNN_results.save_scores()
 
-nB_results.plot_radar_chart()
+nB_results.plot_radar_chart_for_ml_models()
 nB_results.save_scores()
 
-logistic_results.plot_radar_chart()
+logistic_results.plot_radar_chart_for_ml_models()
 logistic_results.save_scores()
 
 
 # print("\nAdaBoost results:")
 # adaBoost_results.print_all_scores()
 # adaBoost_results.print_mean_scores()
-# adaBoost_results.plot_radar_chart()
+# adaBoost_results.plot_radar_chart_for_ml_models()
 # adaBoost_results.save_scores()
 
-models = {"SVM": svm_results.scores,
-          "kNN": kNN_results.scores,
-          "Naive Bayes": nB_results.scores,
-          "Logistic Regression": logistic_results.scores}
+models = ({
+    "SVM": svm_results.scores,
+    "kNN": kNN_results.scores,
+    "Naive Bayes": nB_results.scores,
+    "Logistic Regression": logistic_results.scores
+    # "AdaBoost": adaBoost_results.scores
+    })
 
 RH.ResultHelper.plot_radar_combined(models)
 
-def predict_single_image(image_path):
-    img = cv2.imread(image_path, cv2.IMREAD_COLOR)
-    img = cv2.resize(img, (64, 128))
-    hog_features = hog.compute(img).flatten()
-    prediction = svm_classifier.predict([hog_features])
-    return prediction[0]
+# def predict_single_image(image_path):
+#     img = cv2.imread(image_path, cv2.IMREAD_COLOR)
+#     img = cv2.resize(img, (64, 128))
+#     hog_features = hog.compute(img).flatten()
+#     prediction = svm_classifier.predict([hog_features])
+#     return prediction[0]
 
 
 # img_path = 'test.png'

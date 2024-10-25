@@ -6,7 +6,7 @@ from torchvision import transforms
 
 class ImageDataset(Dataset):
     def __init__(self, img_dir, labels_file, transform=None):
-        # Load the labels from the CSV file
+        # Load labels from the CSV file
         self.labels = pd.read_csv(labels_file)
         self.img_dir = img_dir
         self.transform = transform
@@ -15,15 +15,17 @@ class ImageDataset(Dataset):
         return len(self.labels)
 
     def __getitem__(self, idx):
-        # Get the image file name and label from the labels DataFrame
-        img_name = os.path.join(self.img_dir, self.labels.iloc[idx, 0])  # Get image filename
-        label = self.labels.iloc[idx, 1]  # Get corresponding label
+        # Get image file name and label
+        img_name = os.path.join(self.img_dir, self.labels.iloc[idx, 0]) + '.jpg'
+        img_name = os.path.normpath(img_name)
+        label = self.labels.iloc[idx, 1]
 
-        # Load the image using PIL
-        image = Image.open(img_name).convert("RGB")  # Convert to RGB (for 3-channel images)
+        # Load the image
+        image = Image.open(img_name).convert("RGB")
 
-        # Apply transforms (e.g., resizing, normalization) if provided
+        # Apply transformations (if any)
         if self.transform:
             image = self.transform(image)
 
         return image, label
+
