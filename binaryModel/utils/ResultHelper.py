@@ -19,20 +19,20 @@ class ResultHelper:
     def __init__(self, name="model"):
         self.name = name
         self.metrics = ["accuracy", "recall", "precision", "f1", "balanced accuracy", "G-mean"]
-        self.scores = {"accuracy": 0.0,
-                       "recall": 0.0,
-                       "precision": 0.0,
-                       "f1": 0.0,
-                       "balanced accuracy": 0.0,
-                       "G-mean": 0.0}
+        self.scores = {"accuracy": [],
+                       "recall": [],
+                       "precision": [],
+                       "f1": [],
+                       "balanced accuracy": [],
+                       "G-mean": []}
 
     def append_all_scores(self, y_test, y_pred):
-        self.scores[self.metrics[0]] = accuracy_score(y_test, y_pred)
-        self.scores[self.metrics[1]] = recall_score(y_test, y_pred)
-        self.scores[self.metrics[2]] = precision_score(y_test, y_pred)
-        self.scores[self.metrics[3]] = f1_score(y_test, y_pred)
-        self.scores[self.metrics[4]] = balanced_accuracy_score(y_test, y_pred)
-        self.scores[self.metrics[5]] = geometric_mean_score(y_test, y_pred)
+        self.scores[self.metrics[0]].append(accuracy_score(y_test, y_pred))
+        self.scores[self.metrics[1]].append(recall_score(y_test, y_pred))
+        self.scores[self.metrics[2]].append(precision_score(y_test, y_pred))
+        self.scores[self.metrics[3]].append(f1_score(y_test, y_pred))
+        self.scores[self.metrics[4]].append(balanced_accuracy_score(y_test, y_pred))
+        self.scores[self.metrics[5]].append(geometric_mean_score(y_test, y_pred))
 
     def print_all_scores(self):
         for metric in self.metrics:
@@ -109,7 +109,7 @@ class ResultHelper:
         for name, scores in models.items():
             values = []
             for metric in metrics:
-                values.append(scores[metric])
+                values.append(np.mean(scores[metric]))
             values += values[:1]
             ax.plot(angles, values, linewidth=1, linestyle='solid', label=name)
 
@@ -120,17 +120,42 @@ class ResultHelper:
         plt.savefig(path, dpi=200)
         plt.show()
 
-    def plot_data_stream(self, data_stream, name="data_stream", folder_path="./results"):
+    def plot_data_stream(self, data_stream, name="data_stream", save_path=None, start=0, end=-1):
+        if end == -1:
+            end = len(data_stream)
+        x_values = range(start, end)
+        data_to_plot = data_stream
+        try:
+            data_to_plot = data_stream[start:end]
+        except Exception:
+            print("COULDNT CROP PLOT")
+
         plt.figure(figsize=(10, 6))
-        plt.plot(data_stream, marker='o', color='r')
+        plt.plot(x_values, data_to_plot, marker='None', color='r')
         plt.title('Percentage of sick occurrences per batch')
         plt.xlabel('Batch Number')
         plt.ylabel('Percentage of sick photos(%)')
         plt.grid(True)
 
-        # path = confirm_path(folder_path, name, 'png')
-        #
-        # path = os.path.normpath(path)
-        # plt.savefig(path, dpi=200)
+        if save_path is not None:
+            path = confirm_path(save_path, name, 'png')
+            path = os.path.normpath(path)
+            plt.savefig(path, dpi=200)
+
         plt.show()
 
+    def append_batch_scores(self, batch_scores):
+        for metric, score in batch_scores.items():
+            if metric in self.scores:
+                self.scores[metric].append(score)
+
+    def plot_metrics_per_batch(self, batch_metrics):
+        for metric, scores in batch_metrics.items():
+            plt.figure(figsize=(8, 6))
+            plt.plot(scores, label=metric)
+            plt.title(f'{metric} per Batch')
+            plt.ylim(0, 1)
+            plt.xlabel("Batch")
+            plt.ylabel(metric)
+            plt.legend()
+            plt.show()
