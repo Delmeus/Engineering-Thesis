@@ -56,7 +56,7 @@ class ResultHelper:
     def plot_radar_chart_for_ml_models(self):
         means = []
         for metric in self.metrics:
-            means.append(self.scores[metric])
+            means.append(np.mean(self.scores[metric]))
 
         N = len(self.scores)
         angles = [n / float(N) * 2 * pi for n in range(N)]
@@ -89,7 +89,7 @@ class ResultHelper:
     def plot_radar_combined(models: dict):
         metrics = ["accuracy", "recall", "precision", "f1", "balanced accuracy"]
 
-        N = 5
+        N = len(metrics)
         angles = [n / float(N) * 2 * pi for n in range(N)]
         angles += angles[:1]
 

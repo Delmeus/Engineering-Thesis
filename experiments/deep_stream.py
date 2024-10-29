@@ -16,13 +16,13 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 class CNNModel(nn.Module):
-    def __init__(self, num_classes):
+    def __init__(self):
         super(CNNModel, self).__init__()
         self.conv1 = nn.Conv2d(3, 32, kernel_size=3, padding=1)
         self.pool = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
         self.fc1 = nn.Linear(64 * 56 * 56, 128)
-        self.fc2 = nn.Linear(128, num_classes)
+        self.fc2 = nn.Linear(128, 2)
 
     def forward(self, x):
         x = self.pool(torch.relu(self.conv1(x)))
@@ -32,6 +32,24 @@ class CNNModel(nn.Module):
         x = self.fc2(x)
         return x
 
+
+batch_scores = {"f1": [], "rec": [], "prec": [], "acc": [], "bac": []}
+epoch_scores = {"f1": [], "rec": [], "prec": [], "acc": [], "bac": []}
+
+
+def get_scores(y_true, y_pred):
+    batch_scores["f1"].append(f1_score(y_true, y_pred))
+    batch_scores["rec"].append(recall_score(y_true, y_pred))
+    batch_scores["prec"].append(precision_score(y_true, y_pred))
+    batch_scores["acc"].append(accuracy_score(y_true, y_pred))
+    batch_scores["bac"].append(balanced_accuracy_score(y_true, y_pred))
+
+
+def get_epoch_scores(scores: dict):
+    for key, score in scores.items():
+        epoch_scores[key].append(np.mean(score))
+
+    scores = {"f1": [], "rec": [], "prec": [], "acc": [], "bac": []}
 
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
@@ -45,16 +63,13 @@ labels = labels_df['sick'].values
 dataset = ImageDataset(img_dir='../img/archive/all_images', labels_file=labels_file, transform=transform)
 data_loader = DataLoader(dataset, batch_size=50)
 
-num_classes = 2
-model = CNNModel(num_classes=num_classes).to(device)
+model = CNNModel().to(device)
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 
-batch_f1_scores = []
-batch_f1_scores_all = []
 
-epochs = 10
+epochs = 20
 for epoch in range(epochs):
     model.train()
     running_loss = 0.0
@@ -69,7 +84,7 @@ for epoch in range(epochs):
             _, predicted = torch.max(outputs, 1)
             y_true = labels.cpu().numpy()
             y_pred = predicted.cpu().numpy()
-            batch_f1_scores.append(f1_score(y_true, y_pred, average='macro'))
+            get_scores(y_true, y_pred)
 
         model.train()
         optimizer.zero_grad()
@@ -79,13 +94,14 @@ for epoch in range(epochs):
         optimizer.step()
         running_loss += loss.item()
 
-    plt.plot(batch_f1_scores)
-    batch_f1_scores_all.append(np.mean(batch_f1_scores))
-    batch_f1_scores = []
-    plt.show()
+    get_epoch_scores(batch_scores)
     print(f"Loss: {running_loss / len(data_loader):.4f}")
 
-plt.plot(batch_f1_scores_all)
-plt.show()
+print(epoch_scores)
+
+for key, score in epoch_scores.items():
+    plt.plot(score, label=key)
+    plt.savefig(f"{key}_deep.png", dpi=200)
+    plt.show()
 
 print("Training and evaluation completed.")
