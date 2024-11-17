@@ -9,11 +9,44 @@ from torch.utils.data import DataLoader
 from sklearn.metrics import (
     f1_score, accuracy_score, precision_score, recall_score, balanced_accuracy_score
 )
-from scipy.stats import gmean
+from imblearn.metrics import geometric_mean_score, specificity_score
 from binaryModel.utils.ImageDataset import ImageDataset
+from scipy.ndimage import gaussian_filter1d
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+score_names = ["F1", "Czułość", "Precyzja", "Dokładność", "Zbalansowana dokładność", "Średnia geometryczna", "Swoistość"]
 
+
+def plot_batch_scores(batch_scores, data_loader, batch_number):
+    fig, axes = plt.subplots(nrows=4, ncols=2, figsize=(10, 12))
+    axes = axes.ravel()
+    metric_keys = ["f1", "rec", "prec", "acc", "bac", "gmean", "spec"]
+
+    for i, metric in enumerate(metric_keys):
+        axes[i].plot(gaussian_filter1d(batch_scores[metric], 2), marker='None', label=metric)
+        axes[i].set_title(score_names[i])
+        axes[i].set_xlabel('Blok danych')
+        axes[i].set_ylabel('Średni wynik')
+        axes[i].grid(True)
+
+    imbalance_levels = []
+    for i, (X_chunk, y_chunk) in enumerate(data_loader):
+        y_chunk_np = y_chunk.numpy()
+        sick_percentage = np.sum(y_chunk_np == 1) / len(y_chunk_np)
+        imbalance_levels.append(sick_percentage)
+
+    imbalance_levels = np.array(imbalance_levels) * 100
+    axes[7].plot(gaussian_filter1d(imbalance_levels, 1), color='r')
+    axes[7].set_title("Strumień danych")
+    axes[7].set_xlabel('Blok danych')
+    axes[7].set_ylabel('Stopień niezbalansowania')
+    axes[7].grid(True)
+    # for j in range(len(metric_keys), len(axes)):
+    #     fig.delaxes(axes[j])
+
+    plt.tight_layout()
+    plt.savefig(f"../results/e3/batch{batch_number}_scores.png")
+    plt.show()
 
 class CNNModel(nn.Module):
     def __init__(self):
@@ -32,9 +65,8 @@ class CNNModel(nn.Module):
         x = self.fc2(x)
         return x
 
-
-batch_scores = {"f1": [], "rec": [], "prec": [], "acc": [], "bac": []}
-epoch_scores = {"f1": [], "rec": [], "prec": [], "acc": [], "bac": []}
+batch_scores = {"f1": [], "rec": [], "prec": [], "acc": [], "bac": [], "gmean": [], "spec": []}
+epoch_scores = {"f1": [], "rec": [], "prec": [], "acc": [], "bac": [], "gmean": [], "spec": []}
 
 
 def get_scores(y_true, y_pred):
@@ -43,13 +75,15 @@ def get_scores(y_true, y_pred):
     batch_scores["prec"].append(precision_score(y_true, y_pred))
     batch_scores["acc"].append(accuracy_score(y_true, y_pred))
     batch_scores["bac"].append(balanced_accuracy_score(y_true, y_pred))
+    batch_scores["gmean"].append(geometric_mean_score(y_true, y_pred))
+    batch_scores["spec"].append(specificity_score(y_true, y_pred))
 
 
 def get_epoch_scores(scores: dict):
     for key, score in scores.items():
         epoch_scores[key].append(np.mean(score))
 
-    scores = {"f1": [], "rec": [], "prec": [], "acc": [], "bac": []}
+    # scores = {"f1": [], "rec": [], "prec": [], "acc": [], "bac": [], "gmean": [], "spec": []}
 
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
@@ -94,14 +128,37 @@ for epoch in range(epochs):
         optimizer.step()
         running_loss += loss.item()
 
+    if epoch % 5 == 0:
+        plot_batch_scores(batch_scores, data_loader, epoch)
+
     get_epoch_scores(batch_scores)
+    batch_scores = {"f1": [], "rec": [], "prec": [], "acc": [], "bac": [], "gmean": [], "spec": []}
     print(f"Loss: {running_loss / len(data_loader):.4f}")
 
 print(epoch_scores)
 
-for key, score in epoch_scores.items():
-    plt.plot(score, label=key)
-    plt.savefig(f"{key}_deep.png", dpi=200)
-    plt.show()
+# for key, score in epoch_scores.items():
+#     plt.plot(score, label=key)
+#     plt.savefig(f"{key}_deep.png", dpi=200)
+#     plt.show()
+
+fig, axes = plt.subplots(nrows=4, ncols=2, figsize=(10, 12))
+axes = axes.ravel()
+
+metric_keys = ["f1", "rec", "prec", "acc", "bac", "gmean", "spec"]
+
+for i, metric in enumerate(metric_keys):
+    axes[i].plot(epoch_scores[metric], marker='None', label=metric)
+    axes[i].set_title(score_names[i])
+    axes[i].set_xlabel('Epoka')
+    axes[i].set_ylabel('Średni wynik')
+    axes[i].grid(True)
+
+for j in range(len(metric_keys), len(axes)):
+    fig.delaxes(axes[j])
+
+plt.tight_layout()
+plt.savefig("../results/e3/scores.png")
+plt.show()
 
 print("Training and evaluation completed.")

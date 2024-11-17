@@ -1,3 +1,5 @@
+import sys
+
 import cv2
 import numpy as np
 import pandas as pd
@@ -6,10 +8,12 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB
 import os
-from binaryModel.utils.ResultHelper import ResultHelper
+from binaryModel.utils.ResultHelper import ResultHelper, plot_class_distribution
 from sklearn.model_selection import RepeatedStratifiedKFold
 
-
+if len(sys.argv) < 3:
+    print("Not enough arguments")
+    sys.exit(1)
 
 def load_images_from_csv(csv_file, img_folder):
     data = pd.read_csv(csv_file)
@@ -49,15 +53,23 @@ def extract_hog_features(images):
 
 
 X = extract_hog_features(images)
-
 y = np.array(labels)
+path = sys.argv[1]
+print(sys.argv[2])
+if sys.argv[2] == "1":
+    print("Applying SMOTE")
+    from imblearn.over_sampling import SMOTE
+    smote = SMOTE(random_state=42)
+    X, y = smote.fit_resample(X, y)
 
-rskf = RepeatedStratifiedKFold(n_splits=5, n_repeats=5, random_state=36851234)
+plot_class_distribution(y, folder_path=path)
 
-svm_results = ResultHelper("SVM_hog")
-kNN_results = ResultHelper("kNN_hog")
-nB_results = ResultHelper("Naive Bayes_hog")
-logistic_results = ResultHelper("Logistic regression_hog")
+rskf = RepeatedStratifiedKFold(n_splits=5, n_repeats=2, random_state=36851234)
+
+svm_results = ResultHelper("SVM", path)
+kNN_results = ResultHelper("kNN", path)
+nB_results = ResultHelper("Naiwny klasyfikator Bayesowski", path)
+logistic_results = ResultHelper("Regresja logistyczna", path)
 
 iteration = 1
 
@@ -113,4 +125,4 @@ models = ({
     "Logistic Regression": logistic_results.scores
     })
 
-ResultHelper.plot_radar_combined(models)
+ResultHelper.plot_radar_combined(models, path)

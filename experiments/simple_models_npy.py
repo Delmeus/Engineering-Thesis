@@ -12,7 +12,7 @@ data = np.load('../npy_datasets/image_dataset.npy')
 X = data[:, :-1]
 y = data[:, -1]
 
-rskf = RepeatedStratifiedKFold(n_splits=5, n_repeats=5, random_state=36851234)
+rskf = RepeatedStratifiedKFold(n_splits=5, n_repeats=2, random_state=36851234)
 
 svm_results = RH.ResultHelper("SVM")
 kNN_results = RH.ResultHelper("kNN")
