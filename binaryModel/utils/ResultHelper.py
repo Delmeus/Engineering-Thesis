@@ -119,7 +119,7 @@ class ResultHelper:
         # plt.title("Combined Performance Chart", size=20, color='black', y=1.06)
         path = f"{folder_path}/radar_combined.png"
         path = os.path.normpath(path)
-        plt.legend(bbox_to_anchor=(1.15, -0.05), ncol=5)
+        plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=4, frameon=False)
         plt.tight_layout()
         plt.savefig(path, dpi=200, bbox_inches='tight')
         plt.show()
@@ -207,3 +207,20 @@ def print_mean_results(path):
         print(f"Mean {metric}: {mean_value:.3f}")
 
     file.close()
+
+
+def get_values(path):
+    file = open(path, 'r')
+    data = file.read()
+    rows = data.strip().split("\n")
+
+    results = {}
+    for row in rows:
+        columns = row.split(",")
+
+        metric_name = columns[0]
+        values = list(map(float, columns[1:]))
+        results[metric_name] = values
+
+    file.close()
+    return results

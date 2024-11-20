@@ -16,6 +16,7 @@ if len(sys.argv) < 3:
     sys.exit(1)
 
 def load_images_from_csv(csv_file, img_folder):
+    print("Loading images...")
     data = pd.read_csv(csv_file)
     images = []
     labels = []
@@ -45,6 +46,7 @@ hog = cv2.HOGDescriptor()
 
 
 def extract_hog_features(images):
+    print("Applying HOG...")
     features = []
     for img in images:
         hog_features = hog.compute(img).flatten()
@@ -52,7 +54,24 @@ def extract_hog_features(images):
     return np.array(features)
 
 
-X = extract_hog_features(images)
+from sklearn.decomposition import PCA
+
+def apply_pca(features, n_components=50):
+    print("Applying PCA...")
+    pca = PCA(n_components=n_components)
+    reduced_features = pca.fit_transform(features)
+    return reduced_features
+
+# Extract HOG features
+features = extract_hog_features(images)
+print(f"features {features.shape}")
+# Apply PCA to HOG features
+reduced_features = apply_pca(features, n_components=1000)
+print(f"reduced {reduced_features.shape}")
+# Combine reduced features with labels and save the dataset
+dataset = np.column_stack((reduced_features, labels))
+
+X = reduced_features
 y = np.array(labels)
 path = sys.argv[1]
 print(sys.argv[2])
@@ -84,24 +103,44 @@ for train_index, test_index in rskf.split(X, y):
     svm_classifier = SVC(kernel='linear')
     svm_classifier.fit(X_train, y_train)
     y_pred = svm_classifier.predict(X_test)
+
+    majority_class_count = np.sum(y_pred == 0)
+    majority_class_percentage = (majority_class_count / len(y_pred)) * 100
+    print(f"Percentage of predictions belonging to the majority class: {majority_class_percentage:.2f}%")
+
     svm_results.append_all_scores(y_test, y_pred)
 
     print("Training kNN")
     kNN_classifier = KNeighborsClassifier(n_neighbors=3)
     kNN_classifier.fit(X_train, y_train)
     y_pred = kNN_classifier.predict(X_test)
+
+    majority_class_count = np.sum(y_pred == 0)
+    majority_class_percentage = (majority_class_count / len(y_pred)) * 100
+    print(f"Percentage of predictions belonging to the majority class: {majority_class_percentage:.2f}%")
+
     kNN_results.append_all_scores(y_test, y_pred)
 
     print("Training NB")
     nB_classifier = GaussianNB()
     nB_classifier.fit(X_train, y_train)
     y_pred = nB_classifier.predict(X_test)
+
+    majority_class_count = np.sum(y_pred == 0)
+    majority_class_percentage = (majority_class_count / len(y_pred)) * 100
+    print(f"Percentage of predictions belonging to the majority class: {majority_class_percentage:.2f}%")
+
     nB_results.append_all_scores(y_test, y_pred)
 
     print("Training logistic regression")
     logistic_classifier = LogisticRegression(max_iter=1000)
     logistic_classifier.fit(X_train, y_train)
     y_pred = logistic_classifier.predict(X_test)
+
+    majority_class_count = np.sum(y_pred == 0)
+    majority_class_percentage = (majority_class_count / len(y_pred)) * 100
+    print(f"Percentage of predictions belonging to the majority class: {majority_class_percentage:.2f}%")
+
     logistic_results.append_all_scores(y_test, y_pred)
 
 
@@ -121,8 +160,8 @@ logistic_results.save_scores()
 models = ({
     "SVM": svm_results.scores,
     "kNN": kNN_results.scores,
-    "Naive Bayes": nB_results.scores,
-    "Logistic Regression": logistic_results.scores
+    "NB": nB_results.scores,
+    "RL": logistic_results.scores
     })
 
 ResultHelper.plot_radar_combined(models, path)
