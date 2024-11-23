@@ -85,7 +85,7 @@ plot_class_distribution(y, folder_path=path)
 
 rskf = RepeatedStratifiedKFold(n_splits=5, n_repeats=2, random_state=36851234)
 
-svm_results = ResultHelper("SVM", path)
+svm_results = ResultHelper("SVC", path)
 kNN_results = ResultHelper("kNN", path)
 nB_results = ResultHelper("Naiwny klasyfikator Bayesowski", path)
 logistic_results = ResultHelper("Regresja logistyczna", path)
@@ -99,7 +99,7 @@ for train_index, test_index in rskf.split(X, y):
     X_train, X_test = X[train_index], X[test_index]
     y_train, y_test = y[train_index], y[test_index]
 
-    print("Training SVM")
+    print("Training SVC")
     svm_classifier = SVC(kernel='linear')
     svm_classifier.fit(X_train, y_train)
     y_pred = svm_classifier.predict(X_test)
@@ -158,7 +158,7 @@ logistic_results.save_scores()
 
 
 models = ({
-    "SVM": svm_results.scores,
+    "SVC": svm_results.scores,
     "kNN": kNN_results.scores,
     "NB": nB_results.scores,
     "RL": logistic_results.scores

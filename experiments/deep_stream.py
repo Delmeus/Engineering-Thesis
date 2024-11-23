@@ -102,45 +102,58 @@ criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 
-
 epochs = 20
-for epoch in range(epochs):
-    model.train()
-    running_loss = 0.0
-    print(f"Epoch {epoch + 1}/{epochs}")
+for test_run in range(5):  # Example: testing the model 5 times
+    print(f"Test run {test_run + 1}")
 
-    for images, labels in data_loader:
-        images, labels = images.to(device), labels.to(device)
+    # Reset the model
+    model = CNNModel().to(device)
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
 
-        model.eval()
-        with torch.no_grad():
-            outputs = model(images)
-            _, predicted = torch.max(outputs, 1)
-            y_true = labels.cpu().numpy()
-            y_pred = predicted.cpu().numpy()
-            get_scores(y_true, y_pred)
-
-        model.train()
-        optimizer.zero_grad()
-        outputs = model(images)
-        loss = criterion(outputs, labels)
-        loss.backward()
-        optimizer.step()
-        running_loss += loss.item()
-
-    if epoch % 5 == 0:
-        plot_batch_scores(batch_scores, data_loader, epoch)
-
-    get_epoch_scores(batch_scores)
+    # Optionally, clear epoch and batch scores for each test run
+    epoch_scores = {"f1": [], "rec": [], "prec": [], "acc": [], "bac": [], "gmean": [], "spec": []}
     batch_scores = {"f1": [], "rec": [], "prec": [], "acc": [], "bac": [], "gmean": [], "spec": []}
-    print(f"Loss: {running_loss / len(data_loader):.4f}")
+    # Train and evaluate as usual
+    for epoch in range(epochs):
+        model.train()
+        running_loss = 0.0
+        print(f"Epoch {epoch + 1}/{epochs}")
+
+        for images, labels in data_loader:
+            images, labels = images.to(device), labels.to(device)
+
+            model.eval()
+            with torch.no_grad():
+                outputs = model(images)
+                _, predicted = torch.max(outputs, 1)
+                y_true = labels.cpu().numpy()
+                y_pred = predicted.cpu().numpy()
+                get_scores(y_true, y_pred)
+
+            model.train()
+            optimizer.zero_grad()
+            outputs = model(images)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+            running_loss += loss.item()
+
+        if epoch % 5 == 0:
+            plot_batch_scores(batch_scores, data_loader, epoch)
+
+        get_epoch_scores(batch_scores)
+        batch_scores = {"f1": [], "rec": [], "prec": [], "acc": [], "bac": [], "gmean": [], "spec": []}
+        print(f"Loss: {running_loss / len(data_loader):.4f}")
+
+    file = open(f'../results/e3/test_run_{test_run}.csv', 'w')
+    for key in epoch_scores.keys():
+        file.write(f"{key},")
+        for score in epoch_scores[key]:
+            file.write(f"{score},")
+    file.close()
+    print(f"Test run {test_run + 1} completed.")
 
 print(epoch_scores)
-
-# for key, score in epoch_scores.items():
-#     plt.plot(score, label=key)
-#     plt.savefig(f"{key}_deep.png", dpi=200)
-#     plt.show()
 
 fig, axes = plt.subplots(nrows=4, ncols=2, figsize=(10, 12))
 axes = axes.ravel()
