@@ -48,6 +48,7 @@ def plot_batch_scores(batch_scores, data_loader, batch_number):
     plt.savefig(f"../results/e3/batch{batch_number}_scores.png")
     plt.show()
 
+
 class CNNModel(nn.Module):
     def __init__(self):
         super(CNNModel, self).__init__()
@@ -103,17 +104,14 @@ optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 
 epochs = 20
-for test_run in range(5):  # Example: testing the model 5 times
+for test_run in range(5):
     print(f"Test run {test_run + 1}")
 
-    # Reset the model
     model = CNNModel().to(device)
     optimizer = optim.Adam(model.parameters(), lr=0.001)
 
-    # Optionally, clear epoch and batch scores for each test run
     epoch_scores = {"f1": [], "rec": [], "prec": [], "acc": [], "bac": [], "gmean": [], "spec": []}
     batch_scores = {"f1": [], "rec": [], "prec": [], "acc": [], "bac": [], "gmean": [], "spec": []}
-    # Train and evaluate as usual
     for epoch in range(epochs):
         model.train()
         running_loss = 0.0
