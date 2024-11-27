@@ -1,0 +1,100 @@
+G:\Projekty_Studia\inzynierka\venv\Scripts\python.exe G:\Projekty_Studia\inzynierka\experiments\simple_models_hog.py G:/Projekty_Studia/inzynierka/results/e1/hog/smote 1
+Loading images...
+Applying HOG...
+features (10015, 3780)
+Applying PCA...
+reduced (10015, 1000)
+1
+Applying SMOTE
+iteration = 1
+Training SVM
+Percentage of predictions belonging to the majority class: 45.67%
+Training kNN
+Percentage of predictions belonging to the majority class: 3.69%
+Training NB
+Percentage of predictions belonging to the majority class: 58.54%
+Training logistic regression
+Percentage of predictions belonging to the majority class: 47.88%
+iteration = 2
+Training SVM
+Percentage of predictions belonging to the majority class: 45.80%
+Training kNN
+Percentage of predictions belonging to the majority class: 3.44%
+Training NB
+Percentage of predictions belonging to the majority class: 58.91%
+Training logistic regression
+Percentage of predictions belonging to the majority class: 46.70%
+iteration = 3
+Training SVM
+Percentage of predictions belonging to the majority class: 45.97%
+Training kNN
+Percentage of predictions belonging to the majority class: 3.23%
+Training NB
+Percentage of predictions belonging to the majority class: 59.68%
+Training logistic regression
+Percentage of predictions belonging to the majority class: 46.99%
+iteration = 4
+Training SVM
+Percentage of predictions belonging to the majority class: 46.62%
+Training kNN
+Percentage of predictions belonging to the majority class: 3.10%
+Training NB
+Percentage of predictions belonging to the majority class: 59.15%
+Training logistic regression
+Percentage of predictions belonging to the majority class: 48.23%
+iteration = 5
+Training SVM
+Percentage of predictions belonging to the majority class: 46.15%
+Training kNN
+Percentage of predictions belonging to the majority class: 3.10%
+Training NB
+Percentage of predictions belonging to the majority class: 60.67%
+Training logistic regression
+Percentage of predictions belonging to the majority class: 46.59%
+iteration = 6
+Training SVM
+Percentage of predictions belonging to the majority class: 45.89%
+Training kNN
+Percentage of predictions belonging to the majority class: 3.35%
+Training NB
+Percentage of predictions belonging to the majority class: 58.08%
+Training logistic regression
+Percentage of predictions belonging to the majority class: 46.98%
+iteration = 7
+Training SVM
+Percentage of predictions belonging to the majority class: 46.17%
+Training kNN
+Percentage of predictions belonging to the majority class: 2.88%
+Training NB
+Percentage of predictions belonging to the majority class: 59.26%
+Training logistic regression
+Percentage of predictions belonging to the majority class: 47.72%
+iteration = 8
+Training SVM
+Percentage of predictions belonging to the majority class: 46.81%
+Training kNN
+Percentage of predictions belonging to the majority class: 3.44%
+Training NB
+Percentage of predictions belonging to the majority class: 59.43%
+Training logistic regression
+Percentage of predictions belonging to the majority class: 47.80%
+iteration = 9
+Training SVM
+Percentage of predictions belonging to the majority class: 45.69%
+Training kNN
+Percentage of predictions belonging to the majority class: 3.66%
+Training NB
+Percentage of predictions belonging to the majority class: 59.27%
+Training logistic regression
+Percentage of predictions belonging to the majority class: 46.43%
+iteration = 10
+Training SVM
+Percentage of predictions belonging to the majority class: 46.03%
+Training kNN
+Percentage of predictions belonging to the majority class: 3.04%
+Training NB
+Percentage of predictions belonging to the majority class: 60.76%
+Training logistic regression
+Percentage of predictions belonging to the majority class: 47.83%
+
+Process finished with exit code 0
