@@ -1,6 +1,7 @@
 import numpy as np
 import strlearn as sl
 from sklearn.naive_bayes import GaussianNB
+# from skmultiflow.trees import HoeffdingTreeClassifier
 import matplotlib.pyplot as plt
 import random
 from sklearn.metrics import accuracy_score
@@ -100,40 +101,30 @@ metrics_names = ["Dokładność",
                  "Średnia geometryczna"]
 
 
-num_repetitions = 5
 
 
 evaluator = sl.evaluators.TestThenTrain(metrics)
 evaluator.process(stream, clfs)
 num_chunks_processed = evaluator.scores.shape[1]
 
-scores = np.zeros((len(clfs), num_chunks_processed, len(metrics), num_repetitions))
-
-for rep in range(num_repetitions):
-    print(f"Repetition {rep + 1}/{num_repetitions}")
-    stream.reset()
-
-    evaluator = sl.evaluators.TestThenTrain(metrics)
-    evaluator.process(stream, clfs)
-
-    scores[..., rep] = evaluator.scores
-
-median_scores_per_repetition = np.median(scores, axis=1)
-
 
 for i, clf_name in enumerate(clf_names):
     csv_output_file = f"../results/e2/{filename}_{clf_name}.csv"
 
-    header = "Metryka," + ",".join([f"Powtórzenie_{r + 1}" for r in range(num_repetitions)])
+    header = "Chunk," + ",".join(metrics_names)
 
-    rows = [f"{metrics_names[m]}," + ",".join(map(str, median_scores_per_repetition[i, m, :])) for m in
-            range(len(metrics_names))]
+    rows = []
+    for chunk_idx in range(evaluator.scores.shape[1]):
+        chunk_scores = evaluator.scores[i, chunk_idx, :]
+        row = f"{chunk_idx}," + ",".join(map(str, chunk_scores))
+        rows.append(row)
 
+    # Write to the CSV file
     with open(csv_output_file, "w") as f:
-        f.write(header + "\n" + "\n".join(rows))
+        f.write(header + "\n")
+        f.write("\n".join(rows))
 
-    print(f"Median scores for each repetition saved for {clf_name} to {csv_output_file}")
-
+    print(f"Metrics per chunk saved for {clf_name} to {csv_output_file}")
 imbalance = []
 stream.reset()
 while not stream.is_dry():
